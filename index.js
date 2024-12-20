@@ -1,11 +1,20 @@
-const express = require('express')
-const app = express()
-const port = 5000
+const express = require('express');
+const { usersRouter } = require('./routes/users');
+const { accountRouter } = require('./routes/authentication');
 
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
+const verifyJWT = require('./middleware/verifyJWT');
+
+const port = process.env.PORT || 8080;
+const app = express();
+app.use(express.json());
+
+
+app.use(accountRouter)
+
+app.use(verifyJWT);
+
+app.use(usersRouter)
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
-})
+    console.log("Server Listening on PORT:", port);
+});
