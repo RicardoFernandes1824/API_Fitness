@@ -1,0 +1,28 @@
+{
+  "name": "fitness_app_api",
+  "version": "1.0.0",
+  "description": "Fitness App API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RicardoFernandes1824/API_Fitness.git"
+  },
+  "author": "Ricardo Fernandes",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RicardoFernandes1824/API_Fitness/issues"
+  },
+  "homepage": "https://github.com/RicardoFernandes1824/API_Fitness#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "nodemon": "^3.1.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  }
+}
