@@ -11,9 +11,9 @@ app.use(express.json());
 
 app.use(accountRouter)
 
-app.use(verifyJWT);
-
 app.use(usersRouter)
+
+app.use(verifyJWT);
 
 app.listen(port, () => {
     console.log("Server Listening on PORT:", port);

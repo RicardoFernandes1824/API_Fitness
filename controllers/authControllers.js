@@ -3,11 +3,11 @@ const bcryt = require('bcrypt');
 const jwt = require('jsonwebtoken')
 
 const login = async (request, response) => {
-    const { email, password } = request.body;
-
+    const { username, password } = request.body;
+    try {
     const findUser = await prisma.user.findUnique({
         where: {
-            email: email
+            username: username
         }
     })
 
@@ -24,7 +24,7 @@ const login = async (request, response) => {
     }
 
     const accessToken = jwt.sign(
-        {"email": findUser.email, "id": findUser.id },
+        {"email": findUser.username, "id": findUser.id },
         process.env.JWT_SECRET,
         { expiresIn: '1d' }
     );
@@ -33,8 +33,11 @@ const login = async (request, response) => {
         message: "Enjoy your access token!",
         token: accessToken
     })
-
+    } catch (error){
+        console.log(error)
+    }
 }
+
 
 module.exports = {
     login
