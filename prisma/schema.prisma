@@ -8,11 +8,57 @@ datasource db {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  email     String  @unique
+  id        Int              @id @default(autoincrement())
+  email     String           @unique
   password  String
-  username  String  @unique
+  username  String           @unique
   firstName String?
   lastName  String?
   age       Int?
+  workouts  workoutRoutine[]
+}
+
+model workoutRoutine {
+  id               Int                @id @default(autoincrement())
+  name             String
+  ex1              String
+  ex2              String
+  ex3              String
+  video            String?
+  userId           Int // foreign key
+  user             User?               @relation(fields: [userId], references: [id])
+  trainningSession trainningSession[]
+}
+
+model trainningSession {
+  id                  Int                   @id @default(autoincrement())
+  workoutId           Int // foreign key
+  workout             workoutRoutine        @relation(fields: [workoutId], references: [id])
+  trainningSessionSet trainningSessionSet[]
+  exercise            exercise[]
+  startTime           DateTime?
+  endTime             DateTime?
+}
+
+model trainningSessionSet {
+  id               Int              @id @default(autoincrement())
+  setNumber        Int
+  reps             Int
+  weight           Int
+  sessionId        Int
+  exercise         exercise[]
+  trainningSession trainningSession @relation(fields: [sessionId], references: [id])
+}
+
+model exercise {
+  id                  Int                 @id @default(autoincrement())
+  name                String
+  video               String?
+  description         String?
+  tips                String?
+  sessionId           Int
+  sessionSetId        Int
+  exerciseId          Int
+  trainningSession    trainningSession    @relation(fields: [sessionId], references: [id])
+  trainningSessionSet trainningSessionSet @relation(fields: [sessionSetId], references: [id])
 }
