@@ -1,6 +1,7 @@
 const express = require('express');
 const { usersRouter } = require('./routes/users');
 const { accountRouter } = require('./routes/authentication');
+const { exerciseRouter } = require('./routes/exercise');
 
 const verifyJWT = require('./middleware/verifyJWT');
 
@@ -12,6 +13,8 @@ app.use(express.json());
 app.use(accountRouter)
 
 app.use(usersRouter)
+
+app.use(exerciseRouter)
 
 app.use(verifyJWT);
 

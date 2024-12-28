@@ -26,7 +26,9 @@ model workoutRoutine {
   ex3              String
   video            String?
   userId           Int // foreign key
-  user             User?               @relation(fields: [userId], references: [id])
+  exerciseId       Int // foreign key
+  user             User?              @relation(fields: [userId], references: [id])
+  exercises        workoutRoutineExercise[] // many-to-many relation with exercises
   trainningSession trainningSession[]
 }
 
@@ -35,7 +37,6 @@ model trainningSession {
   workoutId           Int // foreign key
   workout             workoutRoutine        @relation(fields: [workoutId], references: [id])
   trainningSessionSet trainningSessionSet[]
-  exercise            exercise[]
   startTime           DateTime?
   endTime             DateTime?
 }
@@ -46,19 +47,22 @@ model trainningSessionSet {
   reps             Int
   weight           Int
   sessionId        Int
-  exercise         exercise[]
   trainningSession trainningSession @relation(fields: [sessionId], references: [id])
 }
 
 model exercise {
-  id                  Int                 @id @default(autoincrement())
-  name                String
-  video               String?
-  description         String?
-  tips                String?
-  sessionId           Int
-  sessionSetId        Int
-  exerciseId          Int
-  trainningSession    trainningSession    @relation(fields: [sessionId], references: [id])
-  trainningSessionSet trainningSessionSet @relation(fields: [sessionSetId], references: [id])
+  id             Int              @id @default(autoincrement())
+  name           String
+  video          String?
+  description    String?
+  tips           String?
+  routines workoutRoutineExercise[] // many-to-many relation with routines
+}
+
+model workoutRoutineExercise {
+  id              Int             @id @default(autoincrement())
+  routineId       Int             // foreign key
+  exerciseId      Int             // foreign key
+  workoutRoutine  workoutRoutine  @relation(fields: [routineId], references: [id])
+  exercise        exercise        @relation(fields: [exerciseId], references: [id])
 }
