@@ -8,6 +8,12 @@ const login = async (request, response) => {
     const findUser = await prisma.user.findUnique({
         where: {
             username: username
+        },
+        select: {
+            id: true,
+            username: true,
+            password: true,
+            firstName: true // Include firstName in the query
         }
     })
 
@@ -31,7 +37,8 @@ const login = async (request, response) => {
 
     response.json({
         message: "Enjoy your access token!",
-        token: accessToken
+        token: accessToken,
+        firstName: findUser.firstName
     })
     } catch (error){
         console.log(error)
