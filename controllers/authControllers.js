@@ -13,7 +13,8 @@ const login = async (request, response) => {
             id: true,
             username: true,
             password: true,
-            firstName: true // Include firstName in the query
+            firstName: true,
+            lastName: true
         }
     })
 
@@ -38,7 +39,9 @@ const login = async (request, response) => {
     response.json({
         message: "Enjoy your access token!",
         token: accessToken,
-        firstName: findUser.firstName
+        firstName: findUser.firstName,
+        lastName: findUser.lastName,
+        userId: findUser.id
     })
     } catch (error){
         console.log(error)
