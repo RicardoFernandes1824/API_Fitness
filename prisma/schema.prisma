@@ -8,29 +8,25 @@ datasource db {
 }
 
 model User {
-  id        Int              @id @default(autoincrement())
-  email     String           @unique
+  id        Int                @id @default(autoincrement())
+  email     String             @unique
   password  String
-  username  String           @unique
+  username  String             @unique
   firstName String?
   lastName  String?
   gender    String?
-  height    Int?
-  weight    Int?
-  workouts  workoutRoutine[]
+  height    Float?
+  weight    Float?
+  sessionId trainningSession[]
 }
 
 model workoutRoutine {
   id               Int                @id @default(autoincrement())
   name             String
-  ex1              String
-  ex2              String
-  ex3              String
+  ex1              Int
+  ex2              Int
+  ex3              Int
   video            String?
-  userId           Int // foreign key
-  exerciseId       Int // foreign key
-  user             User?              @relation(fields: [userId], references: [id])
-  exercises        workoutRoutineExercise[] // many-to-many relation with exercises
   trainningSession trainningSession[]
 }
 
@@ -39,6 +35,8 @@ model trainningSession {
   workoutId           Int // foreign key
   workout             workoutRoutine        @relation(fields: [workoutId], references: [id])
   trainningSessionSet trainningSessionSet[]
+  userId              Int // foreign key
+  user                User                  @relation(fields: [userId], references: [id])
   startTime           DateTime?
   endTime             DateTime?
 }
@@ -53,18 +51,9 @@ model trainningSessionSet {
 }
 
 model exercise {
-  id             Int              @id @default(autoincrement())
-  name           String
-  video          String?
-  description    String?
-  tips           String?
-  routines workoutRoutineExercise[] // many-to-many relation with routines
-}
-
-model workoutRoutineExercise {
-  id              Int             @id @default(autoincrement())
-  routineId       Int             // foreign key
-  exerciseId      Int             // foreign key
-  workoutRoutine  workoutRoutine  @relation(fields: [routineId], references: [id])
-  exercise        exercise        @relation(fields: [exerciseId], references: [id])
+  id          Int     @id @default(autoincrement())
+  name        String
+  video       String?
+  description String?
+  tips        String?
 }

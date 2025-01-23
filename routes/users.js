@@ -1,7 +1,6 @@
 const express = require('express');
 const usersRouter = express.Router();
-const { updateUser, createUser, getUserById } = require('../controllers/usersControllers');
-const verifyJWT = require('../middleware/verifyJWT');
+const {updateUser, createUser, getUserById} = require('../controllers/usersControllers');
 
 
 usersRouter.post('/users', createUser)
