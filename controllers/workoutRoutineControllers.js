@@ -2,15 +2,24 @@ const prisma = require('../utils/prisma')
 
 
 const createWorkoutRoutine = async (req, res) => {
-    const {name, ex1, ex2, ex3, video} = req.body;
+    const {name, video, workoutRoutineExercise} = req.body;
 
     try {
         const newWorkoutRoutine = await prisma.workoutRoutine.create({
             name,
-            ex1,
-            ex2,
-            ex3,
-            video
+            video,
+            workoutRoutineExercise: JSON.parse(workoutRoutineExercise).map((exercise) => {
+                if (exercise.id) {
+                    return {
+                        exercise: {
+                            connect: {
+                                id: exercise.id
+                            }
+                        },
+                        name: exercise.name,
+                    }
+                }
+            })
         })
         return res.status(201).json(newWorkoutRoutine);
     } catch (error) {

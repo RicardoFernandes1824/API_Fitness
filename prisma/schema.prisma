@@ -17,17 +17,18 @@ model User {
   gender    String?
   height    Float?
   weight    Float?
+  workoutId workoutRoutine[]
   sessionId trainningSession[]
 }
 
 model workoutRoutine {
-  id               Int                @id @default(autoincrement())
-  name             String
-  ex1              Int
-  ex2              Int
-  ex3              Int
-  video            String?
-  trainningSession trainningSession[]
+  id                     Int                      @id @default(autoincrement())
+  name                   String
+  video                  String?
+  userId                 Int // Foreign Key
+  user                   User                     @relation(fields: [userId], references: [id])
+  trainningSession       trainningSession[]
+  workoutRoutineExercise workoutRoutineExercise[]
 }
 
 model trainningSession {
@@ -51,9 +52,18 @@ model trainningSessionSet {
 }
 
 model exercise {
-  id          Int     @id @default(autoincrement())
-  name        String
-  video       String?
-  description String?
-  tips        String?
+  id                     Int                      @id @default(autoincrement())
+  name                   String
+  video                  String?
+  description            String?
+  tips                   String?
+  workoutRoutineExercise workoutRoutineExercise[]
+}
+
+model workoutRoutineExercise {
+  id               Int            @id @default(autoincrement())
+  exerciseId       Int // Foreign Key
+  workoutRoutineId Int // Foreign Key
+  exercise         exercise       @relation(fields: [exerciseId], references: [id])
+  workoutRoutine   workoutRoutine @relation(fields: [workoutRoutineId], references: [id])
 }
