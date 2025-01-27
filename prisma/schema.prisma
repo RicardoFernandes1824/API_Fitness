@@ -29,6 +29,7 @@ model workoutRoutine {
   user                   User                     @relation(fields: [userId], references: [id])
   trainningSession       trainningSession[]
   workoutRoutineExercise workoutRoutineExercise[]
+  workoutRoutineTemplate workoutRoutineTemplate[]
 }
 
 model trainningSession {
@@ -58,12 +59,23 @@ model exercise {
   description            String?
   tips                   String?
   workoutRoutineExercise workoutRoutineExercise[]
+  workoutRoutineTemplate workoutRoutineTemplate[]
 }
 
 model workoutRoutineExercise {
   id               Int            @id @default(autoincrement())
   exerciseId       Int // Foreign Key
   workoutRoutineId Int // Foreign Key
+  exercise         exercise       @relation(fields: [exerciseId], references: [id])
+  workoutRoutine   workoutRoutine @relation(fields: [workoutRoutineId], references: [id])
+}
+
+model workoutRoutineTemplate {
+  id               Int            @id @default(autoincrement())
+  exerciseId       Int // Foreign Key
+  workoutRoutineId Int // Foreign Key
+  reps             Int
+  sets             Int
   exercise         exercise       @relation(fields: [exerciseId], references: [id])
   workoutRoutine   workoutRoutine @relation(fields: [workoutRoutineId], references: [id])
 }
