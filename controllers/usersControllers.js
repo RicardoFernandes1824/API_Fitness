@@ -3,11 +3,11 @@ const bcrypt = require('bcrypt');
 
 const createUser = async (req, response) => {
     try {
-        const { username, email, password } = req.body;
+        const {username, email, password} = req.body;
 
         // Check for missing required fields
         if (!username || !email || !password) {
-            return response.status(400).json({ message: 'All fields are required.' });
+            return response.status(400).json({message: 'All fields are required.'});
         }
 
         // Hash the password
@@ -41,68 +41,70 @@ const createUser = async (req, response) => {
             });
         }
         // Generic error response
-        response.status(500).json({ message: 'An error occurred during registration.' });
+        response.status(500).json({message: 'An error occurred during registration.'});
     }
 };
 
 
 const updateUser = async (req, res) => {
     try {
-        const userId = +req.params.id; // Convert userId to number
+        const userId = Number(req.params.id);
+        if (isNaN(userId)) return res.status(400).json({error: "Invalid user ID."});
 
-        // Check if userId is a valid number
-        if (isNaN(userId)) {
-            return res.status(400).json({ error: "Invalid user ID." });
-        }
-
-        const updateData = req.body; // Get the update data from request body
-        console.log(updateData);
-        // Initialize an empty object to hold the fields we want to update
+        const {username, email, firstName, lastName, gender, height, weight, password} = req.body;
         const updatedFields = {};
 
-        // Check and add valid fields to updatedFields
-        if (updateData.firstName) {
-            updatedFields.firstName = updateData.firstName;
+        if (username) {
+            const existingUser = await prisma.user.findUnique({
+                where: {username}
+            });
+
+            if (existingUser) {
+                return res.status(400).json({error: "Username already taken."});
+            }
+
+            updatedFields.username = username;
         }
-        if (updateData.lastName) {
-            updatedFields.lastName = updateData.lastName;
+
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({error: "Invalid email format."});
         }
-        if (updateData.gender) {
-            updatedFields.gender = updateData.gender;
+        if (email) updatedFields.email = email;
+
+        if (firstName) updatedFields.firstName = firstName;
+        if (lastName) updatedFields.lastName = lastName;
+        if (gender) updatedFields.gender = gender;
+        if (height) updatedFields.height = Number(height);
+        if (weight) updatedFields.weight = Number(weight);
+
+        if (password) {
+            updatedFields.password = await bcrypt.hash(password, 10);
         }
-        if (updateData.height) {
-            updatedFields.height = +updateData.height;
+
+        if (!Object.keys(updatedFields).length) {
+            return res.status(400).json({error: "No valid data to update."});
         }
-        if (updateData.weight) {
-            updatedFields.weight = +updateData.weight;
-        }
-        // Check if no valid fields were provided to update
-        if (Object.keys(updatedFields).length === 0) {
-            return res.status(400).json({ error: "No valid data to update." });
-        }
-        // Attempt to update the user in the database
+
         const updatedUser = await prisma.user.update({
-            where: { id: userId },
+            where: {id: userId},
             data: updatedFields,
+            select: {
+                id: true,
+                username: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                gender: true,
+                height: true,
+                weight: true
+            }
         });
-        // If no user found with the provided ID, throw a 404 error
-        if (!updatedUser) {
-            return res.status(404).json({ error: `User with ID ${userId} not found.` });
-        }
-        // Remove password from the response object
-        delete updatedUser.password;
-        // Send the updated user data as response
-        res.json(updatedUser);
+
+        return res.json(updatedUser);
 
     } catch (error) {
-        // Log the actual error for debugging purposes
-        console.error('Error updating user:', error);
-        // Enhanced error handling for known Prisma errors (e.g., user not found)
-        if (error.code === 'P2025') { // Prisma error code for "Record not found"
-            return res.status(404).json({ error: "User not found." });
-        }
-        // General error message for other issues
-        res.status(500).json({ error: "An error occurred while updating the user." });
+        console.error("Error updating user:", error);
+        return res.status(error.code === "P2025" ? 404 : 500).json({error: "An error occurred while updating the user."});
     }
 };
 
@@ -113,7 +115,7 @@ const getUserById = async (req, response) => {
         const userId = parseInt(req.params.id, 10);
 
         if (isNaN(userId)) {
-            return response.status(400).json({ message: 'Invalid user ID.' });
+            return response.status(400).json({message: 'Invalid user ID.'});
         }
         // Fetch the user by ID
         const userById = await prisma.user.findUnique({
@@ -122,7 +124,7 @@ const getUserById = async (req, response) => {
             },
         });
         if (!userById) {
-            return response.status(404).json({ message: 'User not found.' });
+            return response.status(404).json({message: 'User not found.'});
         }
         // Remove the password field from the response
         delete userById.password;
@@ -130,7 +132,26 @@ const getUserById = async (req, response) => {
         response.status(200).json(userById);
     } catch (error) {
         console.error('Error fetching user by ID:', error);
-        response.status(500).json({ message: 'An error occurred while fetching the user.' });
+        response.status(500).json({message: 'An error occurred while fetching the user.'});
+    }
+};
+
+const deleteUser = async (req, res) => {
+    const userId = parseInt(req.params.id);
+
+    try {
+        const user = await prisma.user.findUnique({where: {id: userId}});
+
+        if (!user) {
+            return res.status(404).json({message: `User with ID ${userId} not found`});
+        }
+
+        await prisma.user.delete({where: {id: userId}});
+
+        res.status(200).json({message: `User with ID ${userId} deleted successfully`});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({message: 'Internal Server Error'});
     }
 };
 
@@ -138,5 +159,6 @@ const getUserById = async (req, response) => {
 module.exports = {
     createUser,
     updateUser,
-    getUserById
+    getUserById,
+    deleteUser
 }
