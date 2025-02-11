@@ -36,6 +36,49 @@ const createWorkoutRoutine = async (req, res) => {
     }
 }
 
+const getWorkoutRoutineByUser = async (req, res) => {
+    const {userId} = req.params;
+
+    try {
+        const workoutRoutines = await prisma.workoutRoutine.findMany({
+            where: {
+                userId: parseInt(userId)
+            },
+            include: {
+                workoutRoutineExercise: {
+                    include: {
+                        exercise: {
+                            select: {
+                                id: true,
+                                name: true,
+                                description: true  // Add if needed
+                            }
+                        }
+                    }
+                },
+                workoutRoutineTemplate: {
+                    select: {
+                        reps: true,
+                        sets: true,
+                        exercise: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        res.status(200).json(workoutRoutines);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({error: "Failed to fetch workout routines"});
+    }
+};
+
+
 const getWorkoutRoutineById = async (req, res) => {
     try {
         const workoutRoutine = await prisma.workoutRoutine.findUnique({
@@ -81,6 +124,7 @@ const updateWorkoutRoutineById = async (req, res) => {
 
 module.exports = {
     createWorkoutRoutine,
+    getWorkoutRoutineByUser,
     getWorkoutRoutineById,
     updateWorkoutRoutineById,
 }
