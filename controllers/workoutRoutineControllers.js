@@ -122,9 +122,45 @@ const updateWorkoutRoutineById = async (req, res) => {
     }
 }
 
+const getWorkoutRoutineTemplateByExerciseId = async (req, res) => {
+    try {
+        const {exerciseId} = req.params;
+
+        if (!exerciseId) {
+            return res.status(400).json({error: "exerciseId is required"});
+        }
+
+        const routines = await prisma.workoutRoutineTemplate.findMany({
+            where: {exerciseId: parseInt(exerciseId)},
+            select: {
+                id: true,
+                reps: true,
+                sets: true,
+                exercise: {
+                    select: {
+                        id: true,
+                        name: true,
+                        video: true
+                    }
+                }
+            }
+        });
+
+        if (routines.length === 0) {
+            return res.status(404).json({message: "No workout routine found for this exercise"});
+        }
+
+        res.json(routines);
+    } catch (error) {
+        console.error("Error fetching workout routine template:", error);
+        res.status(500).json({error: "Internal server error"});
+    }
+};
+
 module.exports = {
     createWorkoutRoutine,
     getWorkoutRoutineByUser,
     getWorkoutRoutineById,
     updateWorkoutRoutineById,
+    getWorkoutRoutineTemplateByExerciseId
 }
