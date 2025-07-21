@@ -25,6 +25,7 @@ model workoutRoutine {
   id                     Int                      @id @default(autoincrement())
   name                   String
   video                  String?
+  deleted Boolean @default(false)
   userId                 Int // Foreign Key
   user                   User                     @relation(fields: [userId], references: [id])
   trainningSession       trainningSession[]
@@ -41,6 +42,7 @@ model trainningSession {
   user                User                  @relation(fields: [userId], references: [id])
   startTime           DateTime?
   endTime             DateTime?
+  finished            Boolean               @default(false)
 }
 
 model trainningSessionSet {
@@ -50,6 +52,8 @@ model trainningSessionSet {
   weight           Int
   sessionId        Int
   trainningSession trainningSession @relation(fields: [sessionId], references: [id])
+  exerciseId       Int
+  exercise         exercise         @relation(fields: [exerciseId], references: [id])
 }
 
 model exercise {
@@ -60,6 +64,7 @@ model exercise {
   tips                   String?
   workoutRoutineExercise workoutRoutineExercise[]
   workoutRoutineTemplate workoutRoutineTemplate[]
+  trainningSessionSet    trainningSessionSet[]
 }
 
 model workoutRoutineExercise {

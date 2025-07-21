@@ -17,7 +17,7 @@ const createWorkoutRoutine = async (req, res) => {
                 },
                 workoutRoutineTemplate: {
                     create: (workoutRoutineTemplate).map((template) => ({
-                        reps: template.reps,
+                        reps: Number(template.reps),
                         sets: template.sets,
                         exercise: {
                             connect: {id: template.exerciseId}
@@ -42,7 +42,8 @@ const getWorkoutRoutineByUser = async (req, res) => {
     try {
         const workoutRoutines = await prisma.workoutRoutine.findMany({
             where: {
-                userId: parseInt(userId)
+                userId: parseInt(userId),
+                deleted: false
             },
             include: {
                 workoutRoutineExercise: {
@@ -88,15 +89,48 @@ const getWorkoutRoutineById = async (req, res) => {
             select: {
                 id: true,
                 name: true,
-                workoutRoutineExercise: true,
-                workoutRoutineTemplate: true,
+                workoutRoutineExercise: {
+                    select: {
+                        id: true,
+                        exerciseId: true,
+                        workoutRoutineId: true,
+                        exercise: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                },
+                workoutRoutineTemplate: {
+                    select: {
+                        exerciseId: true,
+                        workoutRoutineId: true,
+                        sets: true
+                    }
+                }
             }
-        })
+        });
+
+        // Sum sets from all matching workoutRoutineTemplate entries
+        if (workoutRoutine) {
+            workoutRoutine.workoutRoutineExercise = workoutRoutine.workoutRoutineExercise.map(ex => {
+                const templates = workoutRoutine.workoutRoutineTemplate.filter(
+                    t => Number(t.exerciseId) === Number(ex.exerciseId) &&
+                         Number(t.workoutRoutineId) === Number(ex.workoutRoutineId)
+                );
+                const sets = templates.reduce((sum, t) => sum + (t.sets || 0), 0);
+                return {
+                    ...ex,
+                    sets
+                };
+            });
+        }
+
         return res.status(200).json(workoutRoutine);
     } catch (error) {
         return res.status(400).json({
-            error: error,
-        })
+            error: error.message,
+        });
     }
 }
 
@@ -157,10 +191,33 @@ const getWorkoutRoutineTemplateByExerciseId = async (req, res) => {
     }
 };
 
+const deleteWorkoutTemplate = async (req, res) => {
+    const { id } = req.params;
+    try {
+        console.log("Attempting to delete workoutRoutine with id:", id);
+        const result = await prisma.workoutRoutine.findUnique({ where: { id: Number(id) } });
+        console.log("DeleteMany result:", result);
+        if (result) {
+            await prisma.workoutRoutine.update({"where": {
+                id: result.id,
+            }, data: {
+                deleted: true
+            }})
+            res.json({ success: true, message: 'Workout routine deleted.' });
+        } else {
+            res.status(404).json({ success: false, message: 'No routine found with that ID.' });
+        }
+    } catch (error) {
+        console.error("Delete error:", error);
+        res.status(500).json({ success: false, message: 'Failed to delete routine.', error: error.message });
+    }
+};
+
 module.exports = {
     createWorkoutRoutine,
     getWorkoutRoutineByUser,
     getWorkoutRoutineById,
     updateWorkoutRoutineById,
-    getWorkoutRoutineTemplateByExerciseId
+    getWorkoutRoutineTemplateByExerciseId,
+    deleteWorkoutTemplate
 }

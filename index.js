@@ -3,6 +3,7 @@ const {usersRouter} = require('./routes/users');
 const {accountRouter} = require('./routes/authentication');
 const {exerciseRouter} = require('./routes/exercise');
 const {workoutRoutineRouter} = require('./routes/workoutRoutine');
+const { workoutSessionRouter } = require('./routes/workoutSession');
 
 const verifyJWT = require('./middleware/verifyJWT');
 
@@ -18,8 +19,9 @@ app.use(usersRouter)
 app.use(exerciseRouter)
 
 app.use(workoutRoutineRouter)
+app.use(workoutSessionRouter);
 
-app.use(verifyJWT);
+// app.use(verifyJWT); // Move this line below if you want to protect only some routes
 
 app.listen(port, () => {
     console.log("Server Listening on PORT:", port);
