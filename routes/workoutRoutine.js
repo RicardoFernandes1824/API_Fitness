@@ -6,7 +6,8 @@ const {
     getWorkoutRoutineById,
     updateWorkoutRoutineById,
     getWorkoutRoutineTemplateByExerciseId,
-    deleteWorkoutTemplate
+    deleteWorkoutTemplate,
+    getRoutineProgress
 } = require('../controllers/workoutRoutineControllers');
 
 
@@ -16,6 +17,7 @@ workoutRoutineRouter.get('/user/:id/workoutRoutine/:id', getWorkoutRoutineById)
 workoutRoutineRouter.get('/workoutRoutine/template/:id', getWorkoutRoutineTemplateByExerciseId)
 workoutRoutineRouter.patch('/workoutRoutine/:id', updateWorkoutRoutineById)
 workoutRoutineRouter.delete('/workoutTemplate/:id', deleteWorkoutTemplate);
+workoutRoutineRouter.get('/:id/progress', getRoutineProgress);
 
 
 module.exports = {

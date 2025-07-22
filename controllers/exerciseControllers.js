@@ -78,10 +78,42 @@ const getExerciseById = async (req, res) => {
     }
 };
 
+const getExerciseProgress = async (req, res) => {
+    const exerciseId = Number(req.params.id);
+    const userId = Number(req.query.userId);
+    if (isNaN(exerciseId) || isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid exercise or user ID." });
+    }
+    try {
+        const sets = await prisma.trainningSessionSet.findMany({
+            where: {
+                exerciseId: exerciseId,
+                trainningSession: { userId: userId }
+            },
+            select: {
+                weight: true,
+                reps: true,
+                trainningSession: { select: { endTime: true } }
+            },
+            orderBy: { trainningSession: { endTime: 'asc' } }
+        });
+        const progress = sets.map(set => ({
+            date: set.trainningSession.endTime,
+            weight: set.weight,
+            reps: set.reps
+        }));
+        res.json(progress);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch exercise progress." });
+    }
+};
+
 
 module.exports = {
     createExercise,
     getAllExercises,
     updateExercise,
-    getExerciseById
+    getExerciseById,
+    getExerciseProgress
 }

@@ -214,11 +214,42 @@ const deleteWorkoutTemplate = async (req, res) => {
     }
 };
 
+const getRoutineProgress = async (req, res) => {
+    const routineId = Number(req.params.id);
+    const userId = Number(req.query.userId);
+    if (isNaN(routineId) || isNaN(userId)) {
+        return res.status(400).json({ error: "Invalid routine or user ID." });
+    }
+    try {
+        const sessions = await prisma.trainningSession.findMany({
+            where: {
+                workoutRoutineId: routineId,
+                userId: userId
+            },
+            select: {
+                id: true,
+                endTime: true,
+                trainningSessionSet: { select: { weight: true, reps: true } }
+            },
+            orderBy: { endTime: 'asc' }
+        });
+        const progress = sessions.map(session => ({
+            date: session.endTime,
+            totalVolume: session.trainningSessionSet.reduce((sum, set) => sum + (set.weight * set.reps), 0)
+        }));
+        res.json(progress);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to fetch routine progress." });
+    }
+};
+
 module.exports = {
     createWorkoutRoutine,
     getWorkoutRoutineByUser,
     getWorkoutRoutineById,
     updateWorkoutRoutineById,
     getWorkoutRoutineTemplateByExerciseId,
-    deleteWorkoutTemplate
+    deleteWorkoutTemplate,
+    getRoutineProgress
 }
