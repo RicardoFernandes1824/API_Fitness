@@ -82,28 +82,95 @@ const createSessionFromTemplate = async (req, res) => {
 
 const saveSessionResults = async (req, res) => {
     const { sessionId, sets } = req.body; // sets: [{ id, weight, reps }]
+
+    console.log('Saving session results:', sessionId, sets);
     try {
+        const session = await prisma.trainningSession.findUnique({
+            where: { id: sessionId }
+        });
+        if (!session) {
+            return res.status(404).json({ error: 'Session not found' });
+        }
         for (const set of sets) {
-            await prisma.trainningSessionSet.update({
-                where: { id: set.id },
+            console.log('Saving set:', set);
+
+            await prisma.trainningSessionSet.create({
                 data: {
+                    setNumber: set.setNumber || 1,
                     weight: set.weight,
-                    reps: set.reps
+                    reps: set.reps,
+                    done: set.done,
+                    trainningSession: { connect: { id: sessionId } },
+                    exercise: { connect: { id: set.exerciseId } }
                 }
             });
         }
-        // Mark session as finished and set endTime if sessionId is provided
-        if (sessionId) {
-            await prisma.trainningSession.update({
-                where: { id: sessionId },
-                data: {
-                    finished: true,
-                    endTime: new Date()
-                }
-            });
+
+        const allDone = sets.every(set => set.done === true);
+
+        if(!allDone) {
+            console.log('Not all sets are done');
+            return res.status(400).json({ error: 'Not all sets are done' });
         }
+        // Fetch all sets for this session
+        await prisma.trainningSession.update({
+            where: { id: sessionId },
+            data: {
+                finished: allDone,
+                endTime: allDone ? new Date() : null
+            }
+        });
         res.json({ success: true });
     } catch (error) {
+        console.error('Error saving session results:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const saveFullSession = async (req, res) => {
+    const { userId, workoutId, startTime, sets } = req.body;
+    try {
+        const result = await prisma.$transaction(async (prisma) => {
+            // 1. Create the session
+            const session = await prisma.trainningSession.create({
+                data: {
+                    userId,
+                    workoutId,
+                    startTime: startTime ? new Date(startTime) : new Date(),
+                    finished: false
+                }
+            });
+            // 2. Create all sets for this session
+            const createdSets = [];
+            for (const set of sets) {
+                const createdSet = await prisma.trainningSessionSet.create({
+                    data: {
+                        trainningSession: { connect: { id: session.id } },
+                        exercise: { connect: { id: set.exerciseId } },
+                        setNumber: set.setNumber || 1,
+                        weight: set.weight,
+                        reps: set.reps,
+                        done: set.done
+                    }
+                });
+                createdSets.push(createdSet);
+            }
+            // 3. If all sets are done, mark session as finished
+            const allDone = createdSets.every(s => s.done === true);
+            if (allDone) {
+                await prisma.trainningSession.update({
+                    where: { id: session.id },
+                    data: {
+                        finished: true,
+                        endTime: new Date()
+                    }
+                });
+            }
+            return { session, sets: createdSets };
+        });
+        res.json({ success: true, session: result.session, sets: result.sets });
+    } catch (error) {
+        console.error('Error in saveFullSession:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -157,4 +224,4 @@ const getSessionById = async (req, res) => {
     }
 };
 
-module.exports = { createSessionFromTemplate, saveSessionResults, getAllSessionsByUser, getSessionById }; 
+module.exports = { createSessionFromTemplate, saveSessionResults, getAllSessionsByUser, getSessionById, saveFullSession }; 

@@ -51,9 +51,37 @@ const updateExercise = async (req, res) => {
     }
 }
 
+const getExerciseById = async (req, res) => {
+    const { id } = req.params;
+    try {
+        const exercise = await prisma.exercise.findUnique({
+            where: { id: Number(id) },
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                tips: true,
+                video: true,
+                category: true
+            }
+        });
+        if (!exercise) {
+            return res.status(404).json({ error: 'Exercise not found' });
+        }
+        // Convert category enum to string if needed
+        res.json({
+            ...exercise,
+            category: exercise.category
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 module.exports = {
     createExercise,
     getAllExercises,
-    updateExercise
+    updateExercise,
+    getExerciseById
 }

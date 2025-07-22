@@ -96,6 +96,7 @@ const getWorkoutRoutineById = async (req, res) => {
                         workoutRoutineId: true,
                         exercise: {
                             select: {
+                                id: true,
                                 name: true
                             }
                         }

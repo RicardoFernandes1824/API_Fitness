@@ -10,6 +10,11 @@ const createUser = async (req, response) => {
             return response.status(400).json({message: 'All fields are required.'});
         }
 
+        // Email format validation
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return response.status(400).json({message: 'Invalid email format.'});
+        }
+
         // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
@@ -108,6 +113,20 @@ const updateUser = async (req, res) => {
     }
 };
 
+const updateUserPhoto = async (req, res) => {
+    const { id } = req.params;
+    const { photo } = req.body; // photo can be a URL or base64 string
+    try {
+        const user = await prisma.user.update({
+            where: { id: Number(id) },
+            data: { photo }
+        });
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 const getUserById = async (req, response) => {
     try {
@@ -160,5 +179,6 @@ module.exports = {
     createUser,
     updateUser,
     getUserById,
-    deleteUser
+    deleteUser,
+    updateUserPhoto
 }

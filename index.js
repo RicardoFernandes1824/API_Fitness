@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const {usersRouter} = require('./routes/users');
 const {accountRouter} = require('./routes/authentication');
@@ -11,6 +12,7 @@ const port = process.env.PORT || 8080;
 const app = express();
 app.use(express.json());
 
+app.use('/uploads/profile_pics', express.static(path.join(__dirname, 'uploads/profile_pics')));
 
 app.use(accountRouter)
 

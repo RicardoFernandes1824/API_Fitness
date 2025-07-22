@@ -17,6 +17,7 @@ model User {
   gender    String?
   height    Float?
   weight    Float?
+  photo     String?
   workoutId workoutRoutine[]
   sessionId trainningSession[]
 }
@@ -54,6 +55,15 @@ model trainningSessionSet {
   trainningSession trainningSession @relation(fields: [sessionId], references: [id])
   exerciseId       Int
   exercise         exercise         @relation(fields: [exerciseId], references: [id])
+  done             Boolean          @default(false)
+}
+
+enum ExerciseCategory {
+  Chest
+  Back
+  Arms
+  Legs
+  Shoulder
 }
 
 model exercise {
@@ -62,6 +72,7 @@ model exercise {
   video                  String?
   description            String?
   tips                   String?
+  category               ExerciseCategory @default(Chest)
   workoutRoutineExercise workoutRoutineExercise[]
   workoutRoutineTemplate workoutRoutineTemplate[]
   trainningSessionSet    trainningSessionSet[]
