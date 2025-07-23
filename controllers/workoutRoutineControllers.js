@@ -52,7 +52,8 @@ const getWorkoutRoutineByUser = async (req, res) => {
                             select: {
                                 id: true,
                                 name: true,
-                                description: true  // Add if needed
+                                description: true, 
+                                imageURL: true 
                             }
                         }
                     }
@@ -97,7 +98,8 @@ const getWorkoutRoutineById = async (req, res) => {
                         exercise: {
                             select: {
                                 id: true,
-                                name: true
+                                name: true,
+                                imageURL: true 
                             }
                         }
                     }

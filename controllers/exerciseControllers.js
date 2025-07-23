@@ -25,7 +25,17 @@ const createExercise = async (req, res) => {
 
 const getAllExercises = async (req, res) => {
     try {
-        const exercises = await prisma.exercise.findMany()
+        const exercises = await prisma.exercise.findMany({
+            select: {
+                id: true,
+                name: true,
+                description: true,
+                tips: true,
+                video: true,
+                category: true,
+                imageURL: true // Include imageURL
+            }
+        })
         return res.status(200).json(exercises);
     } catch (error) {
         res.status(500).json({error: "An error occurred while getAllExercises"});
@@ -62,7 +72,8 @@ const getExerciseById = async (req, res) => {
                 description: true,
                 tips: true,
                 video: true,
-                category: true
+                category: true,
+                imageURL: true // Include imageURL
             }
         });
         if (!exercise) {

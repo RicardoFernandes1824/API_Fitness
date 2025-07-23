@@ -72,6 +72,7 @@ model exercise {
   video                  String?
   description            String?
   tips                   String?
+  imageURL               String?
   category               ExerciseCategory @default(Chest)
   workoutRoutineExercise workoutRoutineExercise[]
   workoutRoutineTemplate workoutRoutineTemplate[]

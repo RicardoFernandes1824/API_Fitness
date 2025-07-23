@@ -15,6 +15,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+app.use('/uploads/exercise_pics', express.static(path.join(__dirname, 'uploads/exercise_pics')));
 app.use('/uploads/profile_pics', express.static(path.join(__dirname, 'uploads/profile_pics')));
 
 app.use(accountRouter)
@@ -25,6 +26,7 @@ app.use(exerciseRouter)
 
 app.use(workoutRoutineRouter)
 app.use(workoutSessionRouter);
+
 
 // app.use(verifyJWT); 
 
