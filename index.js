@@ -26,7 +26,7 @@ app.use(exerciseRouter)
 app.use(workoutRoutineRouter)
 app.use(workoutSessionRouter);
 
-// app.use(verifyJWT); // Move this line below if you want to protect only some routes
+// app.use(verifyJWT); 
 
 app.listen(port, () => {
     console.log("Server Listening on PORT:", port);

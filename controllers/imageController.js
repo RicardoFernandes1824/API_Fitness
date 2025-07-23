@@ -14,7 +14,13 @@ const uploadUserPhoto = async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
-    const photoPath = `/uploads/profile_pics/${req.file.filename}`;
+    // Extract file extension
+    const ext = path.extname(req.file.originalname);
+    const oldPath = path.join(uploadDir, req.file.filename);
+    const newPath = path.join(uploadDir, req.file.filename + ext);
+    // Rename the file on disk to include the extension
+    fs.renameSync(oldPath, newPath);
+    const photoPath = `/uploads/profile_pics/${req.file.filename}${ext}`;
     console.log('Saving photoPath:', photoPath);
     try {
         const user = await prisma.user.update({
